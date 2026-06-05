@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>マイ・設定 — まいにちTOEIC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tw.js?v=2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<style> body{-webkit-font-smoothing:antialiased} .tnum{font-variant-numeric:tabular-nums} </style>
+</head>
+<body class="bg-[#F6F7F9] text-ink font-sans">
+
+<div class="mx-auto max-w-[440px] min-h-screen px-5 pb-28 pt-7">
+
+  <header class="flex items-center gap-3">
+    <a href="index.html" class="grid h-10 w-10 place-items-center rounded-full bg-white shadow-soft border border-line text-sub">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1 class="text-[20px] font-bold tracking-tight">マイ・設定</h1>
+  </header>
+
+  <!-- stats -->
+  <section class="mt-5 grid grid-cols-3 gap-3">
+    <div class="rounded-2xl bg-white p-4 text-center shadow-soft border border-line">
+      <p class="text-[20px]">🔥</p>
+      <p class="mt-1 font-num text-[20px] font-bold tnum" id="stStreak">0</p>
+      <p class="text-[10px] text-sub">連続日数</p>
+    </div>
+    <div class="rounded-2xl bg-white p-4 text-center shadow-soft border border-line">
+      <p class="text-[20px]">📅</p>
+      <p class="mt-1 font-num text-[20px] font-bold tnum" id="stDays">0</p>
+      <p class="text-[10px] text-sub">学習日数</p>
+    </div>
+    <div class="rounded-2xl bg-white p-4 text-center shadow-soft border border-line">
+      <p class="text-[20px]">📖</p>
+      <p class="mt-1 font-num text-[20px] font-bold tnum" id="stWords">0</p>
+      <p class="text-[10px] text-sub">覚えた単語</p>
+    </div>
+  </section>
+
+  <!-- login (Firebase予定) -->
+  <section class="mt-6">
+    <div class="rounded-2xl bg-white p-5 shadow-soft border border-line">
+      <h2 class="text-[14px] font-bold">アカウント</h2>
+
+      <!-- 未ログイン -->
+      <div id="signedOut">
+        <p class="mt-1 text-[12px] text-sub leading-relaxed">Googleでログインすると、データがクラウドに保存され、複数の端末で同期できます。</p>
+        <button id="googleBtn" class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-white py-3 text-[14px] font-semibold text-ink">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
+          Googleでログイン
+        </button>
+        <p id="offlineNote" class="mt-2 hidden text-[11px] text-amber-600">⚠️ Firebaseに接続できません。データはこの端末に保存されます。</p>
+      </div>
+
+      <!-- ログイン中 -->
+      <div id="signedIn" class="hidden">
+        <div class="mt-2 flex items-center gap-3">
+          <img id="userPhoto" class="h-10 w-10 rounded-full bg-line object-cover" alt="" />
+          <div class="min-w-0 flex-1">
+            <p id="userName" class="truncate text-[14px] font-bold"></p>
+            <p id="userEmail" class="truncate text-[12px] text-sub"></p>
+          </div>
+          <span class="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-600">同期中</span>
+        </div>
+        <button id="logoutBtn" class="mt-3 w-full rounded-xl border border-line bg-white py-2.5 text-[13px] font-semibold text-sub">ログアウト</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- exam date -->
+  <section class="mt-6">
+    <div class="rounded-2xl bg-white p-5 shadow-soft border border-line">
+      <h2 class="text-[14px] font-bold">試験日</h2>
+      <p class="mt-1 text-[12px] text-sub">受験予定日を設定すると、ホームにカウントダウンが表示されます。</p>
+      <input type="date" id="examDate" class="mt-3 w-full rounded-xl border border-line bg-[#F8FAFC] px-4 py-3 text-[15px] font-num" />
+      <div id="paceHint" class="mt-2 hidden text-[12px] text-brand font-medium"></div>
+    </div>
+  </section>
+
+  <!-- target score -->
+  <section class="mt-6">
+    <div class="rounded-2xl bg-white p-5 shadow-soft border border-line">
+      <h2 class="text-[14px] font-bold">目標スコア</h2>
+      <select id="targetScore" class="mt-3 w-full rounded-xl border border-line bg-[#F8FAFC] px-4 py-3 text-[15px]">
+        <option value="300">300点</option>
+        <option value="400">400点</option>
+        <option value="500">500点</option>
+        <option value="600">600点</option>
+        <option value="700">700点</option>
+        <option value="800">800点以上</option>
+      </select>
+    </div>
+  </section>
+
+  <button id="saveBtn" class="mt-6 w-full rounded-2xl bg-brand py-4 text-[15px] font-bold text-white shadow-card">保存する</button>
+  <p id="savedMsg" class="mt-2 hidden text-center text-[13px] font-medium text-emerald-600">✓ 保存しました</p>
+
+  <!-- reset -->
+  <section class="mt-8">
+    <button id="resetBtn" class="w-full rounded-2xl bg-white py-4 text-[14px] font-bold text-rose-500 shadow-soft border border-line">学習データをリセット</button>
+  </section>
+
+</div>
+
+<div id="nav"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="assets/store.js?v=2"></script>
+<script src="assets/content.js?v=3"></script>
+<script src="assets/ui.js?v=2"></script>
+<script src="assets/firebase.js?v=2"></script>
+<script src="assets/sync.js?v=2"></script>
+<script>
+  // stats
+  function refreshStats() {
+    document.getElementById('stStreak').textContent = Store.getStreak();
+    document.getElementById('stDays').textContent = Store.get().studyDates.length;
+    document.getElementById('stWords').textContent = Store.get().vocabKnown.length;
+  }
+  refreshStats();
+  Store.onChange(refreshStats); // クラウド同期後に更新
+
+  // load values
+  const examInput = document.getElementById('examDate');
+  const targetSel = document.getElementById('targetScore');
+  if (Store.getExamDate()) examInput.value = Store.getExamDate();
+  targetSel.value = String(Store.getTargetScore());
+
+  function showPace() {
+    const hint = document.getElementById('paceHint');
+    const d = examInput.value ? Store.diffDays(Store.todayStr(), examInput.value) : null;
+    if (d && d > 0) {
+      hint.textContent = `試験まであと ${d} 日。1日1パート＋単語10語のペースで続けましょう！`;
+      hint.classList.remove('hidden');
+    } else {
+      hint.classList.add('hidden');
+    }
+  }
+  examInput.addEventListener('change', showPace);
+  showPace();
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    Store.setExamDate(examInput.value || null);
+    Store.setTargetScore(+targetSel.value);
+    const msg = document.getElementById('savedMsg');
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 1800);
+  });
+
+  // ---- 認証UI ----
+  const signedOut = document.getElementById('signedOut');
+  const signedIn = document.getElementById('signedIn');
+
+  function applyAuthUI(user, ready) {
+    if (user) {
+      signedOut.classList.add('hidden');
+      signedIn.classList.remove('hidden');
+      document.getElementById('userName').textContent = user.displayName || 'ユーザー';
+      document.getElementById('userEmail').textContent = user.email || '';
+      const photo = document.getElementById('userPhoto');
+      if (user.photoURL) photo.src = user.photoURL;
+    } else {
+      signedIn.classList.add('hidden');
+      signedOut.classList.remove('hidden');
+      document.getElementById('offlineNote').classList.toggle('hidden', ready !== false);
+    }
+  }
+  // 初期状態
+  applyAuthUI(Cloud.currentUser(), Cloud.isReady());
+  window.addEventListener('auth-changed', (e) => applyAuthUI(e.detail.user, e.detail.ready));
+
+  document.getElementById('googleBtn').addEventListener('click', async () => {
+    try {
+      await Cloud.signInWithGoogle();
+    } catch (e) {
+      console.warn(e);
+      alert('ログインに失敗しました。\n' + (e && e.message ? e.message : '') +
+        '\n\n※ http://localhost で開いているか、ポップアップがブロックされていないかご確認ください。');
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await Cloud.signOut();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (confirm('学習データ（進捗・連続日数・覚えた単語など）をすべて消します。よろしいですか？')) {
+      Store.resetAll();
+      alert('リセットしました。');
+      location.href = 'index.html';
+    }
+  });
+
+  document.getElementById('nav').innerHTML = UI.renderNav('my');
+</script>
+</body>
+</html>

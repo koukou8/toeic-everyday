@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>パート学習 — まいにちTOEIC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="../assets/tw.js?v=2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<style> body{-webkit-font-smoothing:antialiased} .tnum{font-variant-numeric:tabular-nums} </style>
+</head>
+<body class="bg-[#F6F7F9] text-ink font-sans">
+
+<div class="mx-auto max-w-[440px] min-h-screen px-5 pb-28 pt-7">
+
+  <header class="flex items-center gap-3">
+    <a href="list.html" class="grid h-10 w-10 place-items-center rounded-full bg-white shadow-soft border border-line text-sub">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <div>
+      <p class="text-[12px] text-sub" id="skillLabel"></p>
+      <h1 class="text-[20px] font-bold tracking-tight" id="title">Part</h1>
+    </div>
+  </header>
+
+  <!-- 解説レッスン -->
+  <section class="mt-5">
+    <div class="rounded-2xl bg-white p-5 shadow-soft border border-line">
+      <div class="mb-2 flex items-center gap-2">
+        <span class="text-[18px]">📘</span><h2 class="text-[15px] font-bold">解説レッスン</h2>
+      </div>
+      <div class="prose-toeic space-y-2 text-[14px] leading-relaxed" id="lesson"></div>
+    </div>
+  </section>
+
+  <!-- 練習問題 -->
+  <section class="mt-6">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-[15px] font-bold">練習問題</h2>
+      <span class="text-[12px] text-sub" id="qCount"></span>
+    </div>
+    <div class="space-y-4" id="quiz"></div>
+  </section>
+
+  <!-- 完了 -->
+  <section class="mt-6">
+    <div id="resultBox" class="hidden rounded-2xl bg-white p-5 text-center shadow-soft border border-line">
+      <div class="text-[32px]">🎉</div>
+      <p class="mt-1 text-[15px] font-bold">おつかれさまでした！</p>
+      <p class="mt-1 text-[13px] text-sub" id="resultText"></p>
+    </div>
+    <button id="completeBtn" disabled
+      class="mt-4 w-full rounded-2xl bg-brand py-4 text-[15px] font-bold text-white shadow-card disabled:opacity-40 disabled:shadow-none transition">
+      すべて解いて完了する
+    </button>
+    <a href="../index.html" id="homeBtn" class="mt-3 hidden w-full rounded-2xl bg-white py-4 text-center text-[15px] font-bold text-brand shadow-soft border border-line">
+      ホームに戻る
+    </a>
+  </section>
+
+</div>
+
+<div id="nav"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="../assets/store.js?v=2"></script>
+<script src="../assets/content.js?v=3"></script>
+<script src="../assets/ui.js?v=2"></script>
+<script src="../assets/firebase.js?v=2"></script>
+<script src="../assets/sync.js?v=2"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const partId = params.get('p') || 'part5';
+  const meta = getPart(partId);
+  const data = PART_CONTENT[partId];
+
+  if (!meta || !data) {
+    document.getElementById('title').textContent = '見つかりませんでした';
+  } else {
+    document.getElementById('skillLabel').textContent =
+      (meta.skill === 'L' ? '🎧 リスニング' : '📖 リーディング') + ' ・ ' + meta.desc;
+    document.getElementById('title').textContent = `Part ${meta.no}　${meta.title}`;
+    document.getElementById('lesson').innerHTML = data.lesson;
+
+    const bank = data.questions;
+    const questions = pickSession(bank, PART_SESSION);
+    const total = questions.length;
+    document.getElementById('qCount').textContent =
+      bank.length > total ? `${total}問（全${bank.length}問から日替わり）` : `全${total}問`;
+
+    const answered = new Array(total).fill(false);
+    let correctCount = 0;
+
+    const quiz = document.getElementById('quiz');
+    quiz.innerHTML = questions.map((q, i) => renderQuestion(q, i, meta)).join('');
+
+    // 音声ボタン
+    quiz.querySelectorAll('[data-audio]').forEach((btn) => {
+      btn.addEventListener('click', () => UI.speak(btn.getAttribute('data-audio')));
+    });
+    // スクリプト表示トグル
+    quiz.querySelectorAll('[data-toggle]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = document.getElementById(btn.getAttribute('data-toggle'));
+        el.classList.toggle('hidden');
+        btn.textContent = el.classList.contains('hidden') ? 'スクリプトを見る' : 'スクリプトを隠す';
+      });
+    });
+    // 選択肢
+    quiz.querySelectorAll('[data-choice]').forEach((btn) => {
+      btn.addEventListener('click', onChoose);
+    });
+
+    function onChoose(e) {
+      const btn = e.currentTarget;
+      const qi = +btn.dataset.q;
+      const ci = +btn.dataset.choice;
+      if (answered[qi]) return;
+      answered[qi] = true;
+      const q = questions[qi];
+      const correct = ci === q.answer;
+      if (correct) correctCount++;
+
+      // 全選択肢をロックして色付け
+      const wrap = document.getElementById('q' + qi);
+      wrap.querySelectorAll('[data-choice]').forEach((b) => {
+        b.disabled = true;
+        const idx = +b.dataset.choice;
+        if (idx === q.answer) {
+          b.className = b.className.replace(/border-line|bg-white/g, '') + ' border-emerald-400 bg-emerald-50 text-emerald-700';
+        } else if (idx === ci) {
+          b.className = b.className.replace(/border-line|bg-white/g, '') + ' border-rose-300 bg-rose-50 text-rose-600';
+        } else {
+          b.classList.add('opacity-50');
+        }
+      });
+      // 解説表示
+      const ex = document.getElementById('ex' + qi);
+      ex.querySelector('[data-verdict]').innerHTML = correct
+        ? '<span class="font-bold text-emerald-600">正解！</span>'
+        : '<span class="font-bold text-rose-500">残念…</span> 正解は ' + ['A','B','C','D'][q.answer] + ' です。';
+      ex.classList.remove('hidden');
+
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const done = answered.filter(Boolean).length;
+      const btn = document.getElementById('completeBtn');
+      if (done === total) {
+        btn.disabled = false;
+        btn.textContent = `完了する（${correctCount}/${total} 正解）`;
+      } else {
+        btn.textContent = `あと ${total - done} 問で完了`;
+      }
+    }
+    updateProgress();
+
+    document.getElementById('completeBtn').addEventListener('click', () => {
+      Store.recordDone(partId, total);
+      Store.setPartProgress(partId, correctCount, total);
+      const est = Store.recordScore(correctCount, total);
+      document.getElementById('resultText').innerHTML =
+        `Part ${meta.no} を <b>${correctCount}/${total}</b> 正解で完了。連続 <b>${Store.getStreak()}</b> 日達成！<br>` +
+        `<span class="text-brand font-bold">推定スコア 約 ${est} 点</span>（目安）`;
+      document.getElementById('resultBox').classList.remove('hidden');
+      document.getElementById('completeBtn').classList.add('hidden');
+      document.getElementById('homeBtn').classList.remove('hidden');
+      document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
+      UI.celebrate();
+    });
+  }
+
+  // 在庫から日替わりで n 問を選ぶ（毎日違う問題に当たる）
+  function pickSession(bank, n) {
+    if (bank.length <= n) return bank.slice();
+    const today = new Date();
+    const di = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+    const start = (di * n) % bank.length;
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(bank[(start + i) % bank.length]);
+    return out;
+  }
+
+  function renderQuestion(q, i, meta) {
+    const isL = meta.skill === 'L';
+    let media = '';
+    if (q.scene) {
+      media += `<div class="mb-3 rounded-xl bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600 border border-line">${q.scene}</div>`;
+    }
+    if (q.audio) {
+      media += `<div class="mb-3 flex items-center gap-2">
+        <button data-audio="${UI.escapeHtml(q.audio)}" class="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-[13px] font-bold text-white shadow-soft">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> 音声を再生
+        </button>
+        ${q.passage ? `<button data-toggle="script${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">スクリプトを見る</button>` : ''}
+      </div>`;
+      if (q.passage) {
+        media += `<pre id="script${i}" class="hidden mb-3 whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2.5 text-[13px] leading-relaxed text-slate-700 border border-line font-sans">${UI.escapeHtml(q.passage)}</pre>`;
+      }
+    } else if (q.passage) {
+      // リーディングの本文は常に表示
+      media += `<pre class="mb-3 whitespace-pre-wrap rounded-xl bg-slate-50 px-3.5 py-3 text-[13px] leading-relaxed text-slate-700 border border-line font-sans">${UI.escapeHtml(q.passage)}</pre>`;
+    }
+
+    const choices = q.choices.map((c, ci) => `
+      <button data-choice="${ci}" data-q="${i}"
+        class="w-full rounded-xl border border-line bg-white px-4 py-3 text-left text-[14px] font-medium hover:border-brand/40 transition">
+        ${UI.escapeHtml(c)}
+      </button>`).join('');
+
+    return `<div id="q${i}" class="rounded-2xl bg-white p-4 shadow-soft border border-line">
+      <div class="mb-3 flex items-center gap-2">
+        <span class="grid h-6 w-6 place-items-center rounded-full bg-indigo-50 text-[11px] font-bold text-brand">${i + 1}</span>
+        <span class="text-[12px] text-sub">問題 ${i + 1}</span>
+      </div>
+      ${media}
+      <p class="mb-3 text-[15px] font-semibold leading-relaxed">${UI.escapeHtml(q.prompt)}</p>
+      <div class="space-y-2">${choices}</div>
+      <div id="ex${i}" class="hidden mt-3 rounded-xl bg-amber-50 px-4 py-3 text-[13px] leading-relaxed text-amber-900 border border-amber-100">
+        <p data-verdict class="mb-1"></p>
+        <p>${UI.escapeHtml(q.explain)}</p>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('nav').innerHTML = UI.renderNav('parts', '../');
+</script>
+</body>
+</html>
