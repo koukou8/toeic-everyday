@@ -66,8 +66,8 @@
 <div id="nav"></div>
 
 <script src="../assets/store.js?v=2"></script>
-<script src="../assets/grammar.js?v=3"></script>
-<script src="../assets/ui.js?v=2"></script>
+<script src="../assets/grammar.js?v=5"></script>
+<script src="../assets/ui.js?v=3"></script>
 <script>
   const params = new URLSearchParams(location.search);
   const g = getGrammar(params.get('g') || 'g1');
@@ -89,6 +89,10 @@
     const quiz = document.getElementById('quiz');
     quiz.innerHTML = questions.map((q, i) => renderQuestion(q, i)).join('');
     quiz.querySelectorAll('[data-choice]').forEach((btn) => btn.addEventListener('click', onChoose));
+    // 読み上げボタン
+    quiz.querySelectorAll('[data-audio]').forEach((btn) => {
+      btn.addEventListener('click', () => UI.speak(btn.getAttribute('data-audio')));
+    });
 
     function onChoose(e) {
       const btn = e.currentTarget;
@@ -152,10 +156,14 @@
         class="w-full rounded-xl border border-line bg-white px-4 py-3 text-left text-[14px] font-medium hover:border-brand/40 transition">
         ${UI.escapeHtml(c)}
       </button>`).join('');
+    const speakHtml = UI.speakButton(UI.questionSpeakText(q));
     return `<div id="q${i}" class="rounded-2xl bg-white p-4 shadow-soft border border-line">
-      <div class="mb-3 flex items-center gap-2">
-        <span class="grid h-6 w-6 place-items-center rounded-full bg-indigo-50 text-[11px] font-bold text-brand">${i + 1}</span>
-        <span class="text-[12px] text-sub">問題 ${i + 1}</span>
+      <div class="mb-3 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="grid h-6 w-6 place-items-center rounded-full bg-indigo-50 text-[11px] font-bold text-brand">${i + 1}</span>
+          <span class="text-[12px] text-sub">問題 ${i + 1}</span>
+        </div>
+        ${speakHtml}
       </div>
       <p class="mb-3 text-[15px] font-semibold leading-relaxed">${UI.escapeHtml(q.prompt)}</p>
       <div class="space-y-2">${choices}</div>

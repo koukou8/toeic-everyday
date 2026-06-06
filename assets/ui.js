@@ -100,5 +100,30 @@ const UI = (() => {
     return bottom + side;
   }
 
-  return { speak, renderNav, escapeHtml, celebrate };
+  // ---- 設問の読み上げテキストを作る ----
+  // リスニング問題は audio をそのまま使う。リーディング/文法は本文＋設問から
+  // 英文だけ抜き出し、空所(_____)は "blank"、日本語(括弧の補足など)は除去する。
+  function questionSpeakText(q) {
+    if (q && q.audio) return q.audio;
+    const segs = [];
+    if (q && q.passage) segs.push(q.passage);
+    if (q && q.prompt) segs.push(q.prompt);
+    let t = segs.join('. ');
+    t = t.replace(/[（(][^()（）]*[ぁ-んァ-ヶ一-龥][^()（）]*[）)]/g, ' '); // 日本語を含む括弧を除去
+    t = t.replace(/_{2,}/g, ' blank '); // 空所は blank と読む
+    t = t.replace(/[ぁ-んァ-ヶー一-龥、。・「」『』〜：　！？]/g, ' '); // 残った日本語文字を除去
+    t = t.replace(/\s+/g, ' ').trim();
+    return t;
+  }
+
+  // ---- 読み上げボタンのHTML（クリックは [data-audio] のリスナーで処理）----
+  function speakButton(text, extraClass) {
+    if (!text) return '';
+    return `<button data-audio="${escapeHtml(text)}" title="読み上げ" aria-label="読み上げ"
+      class="${extraClass || ''} grid h-8 w-8 shrink-0 place-items-center rounded-full bg-indigo-50 text-brand active:scale-95 transition">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.8-1-3.3-2.5-4v8c1.5-.7 2.5-2.2 2.5-4z"/></svg>
+    </button>`;
+  }
+
+  return { speak, renderNav, escapeHtml, celebrate, questionSpeakText, speakButton };
 })();

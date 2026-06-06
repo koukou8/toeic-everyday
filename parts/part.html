@@ -68,8 +68,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="../assets/store.js?v=2"></script>
-<script src="../assets/content.js?v=3"></script>
-<script src="../assets/ui.js?v=2"></script>
+<script src="../assets/content.js?v=4"></script>
+<script src="../assets/ui.js?v=3"></script>
 <script src="../assets/firebase.js?v=2"></script>
 <script src="../assets/sync.js?v=2"></script>
 <script>
@@ -213,10 +213,16 @@
         ${UI.escapeHtml(c)}
       </button>`).join('');
 
+    // リスニング(q.audio)は上部の「音声を再生」ボタンがあるので、
+    // リーディングの問題にだけヘッダーに読み上げボタンを出す。
+    const speakHtml = q.audio ? '' : UI.speakButton(UI.questionSpeakText(q));
     return `<div id="q${i}" class="rounded-2xl bg-white p-4 shadow-soft border border-line">
-      <div class="mb-3 flex items-center gap-2">
-        <span class="grid h-6 w-6 place-items-center rounded-full bg-indigo-50 text-[11px] font-bold text-brand">${i + 1}</span>
-        <span class="text-[12px] text-sub">問題 ${i + 1}</span>
+      <div class="mb-3 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="grid h-6 w-6 place-items-center rounded-full bg-indigo-50 text-[11px] font-bold text-brand">${i + 1}</span>
+          <span class="text-[12px] text-sub">問題 ${i + 1}</span>
+        </div>
+        ${speakHtml}
       </div>
       ${media}
       <p class="mb-3 text-[15px] font-semibold leading-relaxed">${UI.escapeHtml(q.prompt)}</p>
