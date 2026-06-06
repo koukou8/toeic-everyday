@@ -56,7 +56,7 @@ const UI = (() => {
     setTimeout(() => c.remove(), 3200);
   }
 
-  // ---- 下部ナビ ----
+  // ---- ナビ（スマホ:下部バー / PC:左サイドバー）----
   function renderNav(active, base = '') {
     const items = [
       { key: 'home',  label: 'ホーム', href: base + 'index.html',    icon: '<path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2h-3v-6H8v6H5a2 2 0 0 1-2-2z"/>' },
@@ -64,16 +64,40 @@ const UI = (() => {
       { key: 'vocab', label: '単語',   href: base + 'vocab.html',     icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>' },
       { key: 'my',    label: 'マイ',   href: base + 'settings.html',  icon: '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>' },
     ];
+    const icon = (it) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${it.icon}</svg>`;
+
+    // 下部バー（モバイル）— lg 以上では非表示
     const cells = items.map((it) => {
       const on = it.key === active;
       return `<a href="${it.href}" class="flex flex-col items-center gap-1 py-1 ${on ? 'text-brand' : 'text-sub'}">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${it.icon}</svg>
+        ${icon(it)}
         <span class="text-[10px] ${on ? 'font-semibold' : ''}">${it.label}</span>
       </a>`;
     }).join('');
-    return `<nav class="fixed bottom-0 left-1/2 z-20 w-full max-w-[440px] -translate-x-1/2 border-t border-line bg-white/90 backdrop-blur-md">
+    const bottom = `<nav class="fixed bottom-0 left-1/2 z-20 w-full max-w-[440px] -translate-x-1/2 border-t border-line bg-white/90 backdrop-blur-md lg:hidden">
       <div class="grid grid-cols-4 px-2 py-2">${cells}</div>
     </nav>`;
+
+    // 左サイドバー（PC）— lg 未満では非表示
+    const rows = items.map((it) => {
+      const on = it.key === active;
+      return `<a href="${it.href}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] transition ${on ? 'bg-indigo-50 text-brand font-semibold' : 'text-sub hover:bg-slate-50'}">
+        ${icon(it)}
+        <span>${it.label}</span>
+      </a>`;
+    }).join('');
+    const side = `<aside class="hidden lg:flex fixed left-0 top-0 z-20 h-screen w-60 flex-col border-r border-line bg-white px-4 py-7">
+      <a href="${base + 'index.html'}" class="flex items-center gap-2 px-3">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand to-brand2 text-[18px]">📚</span>
+        <span class="leading-tight">
+          <span class="block text-[11px] text-sub">まいにち</span>
+          <span class="block text-[16px] font-bold tracking-tight">TOEIC</span>
+        </span>
+      </a>
+      <nav class="mt-7 flex flex-col gap-1">${rows}</nav>
+    </aside>`;
+
+    return bottom + side;
   }
 
   return { speak, renderNav, escapeHtml, celebrate };
