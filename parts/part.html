@@ -110,6 +110,16 @@
         btn.textContent = el.classList.contains('hidden') ? 'スクリプトを見る' : 'スクリプトを隠す';
       });
     });
+    // 日本語訳表示トグル（リスニング）
+    quiz.querySelectorAll('[data-jptoggle]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const wrap = document.getElementById('q' + btn.getAttribute('data-jptoggle'));
+        const spans = wrap.querySelectorAll('.jp-trans');
+        const show = spans.length && spans[0].classList.contains('hidden');
+        spans.forEach((s) => s.classList.toggle('hidden', !show));
+        btn.textContent = show ? '日本語訳を隠す' : '日本語訳を見る';
+      });
+    });
     // 選択肢
     quiz.querySelectorAll('[data-choice]').forEach((btn) => {
       btn.addEventListener('click', onChoose);
@@ -186,18 +196,26 @@
     return out;
   }
 
+  // 全角括弧内の日本語訳（…）をトグル可能な span に包む（リスニング用）
+  function withHideableJp(str) {
+    return UI.escapeHtml(str).replace(/（[^）]*）/g, (m) => `<span class="jp-trans hidden">${m}</span>`);
+  }
+
   function renderQuestion(q, i, meta) {
     const isL = meta.skill === 'L';
+    // リスニングで、設問・選択肢に括弧内の日本語訳がある場合だけトグル対象にする
+    const hasJp = isL && /（[^）]*）/.test(q.prompt + q.choices.join(''));
     let media = '';
     if (q.scene) {
       media += `<div class="mb-3 rounded-xl bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600 border border-line">${q.scene}</div>`;
     }
     if (q.audio) {
-      media += `<div class="mb-3 flex items-center gap-2">
+      media += `<div class="mb-3 flex flex-wrap items-center gap-2">
         <button data-audio="${UI.escapeHtml(q.audio)}" class="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-[13px] font-bold text-white shadow-soft">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> 音声を再生
         </button>
         ${q.passage ? `<button data-toggle="script${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">スクリプトを見る</button>` : ''}
+        ${hasJp ? `<button data-jptoggle="${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">日本語訳を見る</button>` : ''}
       </div>`;
       if (q.passage) {
         media += `<pre id="script${i}" class="hidden mb-3 whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2.5 text-[13px] leading-relaxed text-slate-700 border border-line font-sans">${UI.escapeHtml(q.passage)}</pre>`;
@@ -207,10 +225,11 @@
       media += `<pre class="mb-3 whitespace-pre-wrap rounded-xl bg-slate-50 px-3.5 py-3 text-[13px] leading-relaxed text-slate-700 border border-line font-sans">${UI.escapeHtml(q.passage)}</pre>`;
     }
 
+    const renderText = hasJp ? withHideableJp : UI.escapeHtml;
     const choices = q.choices.map((c, ci) => `
       <button data-choice="${ci}" data-q="${i}"
         class="w-full rounded-xl border border-line bg-white px-4 py-3 text-left text-[14px] font-medium hover:border-brand/40 transition">
-        ${UI.escapeHtml(c)}
+        ${renderText(c)}
       </button>`).join('');
 
     // リスニング(q.audio)は上部の「音声を再生」ボタンがあるので、
@@ -225,7 +244,7 @@
         ${speakHtml}
       </div>
       ${media}
-      <p class="mb-3 text-[15px] font-semibold leading-relaxed">${UI.escapeHtml(q.prompt)}</p>
+      <p class="mb-3 text-[15px] font-semibold leading-relaxed">${renderText(q.prompt)}</p>
       <div class="space-y-2">${choices}</div>
       <div id="ex${i}" class="hidden mt-3 rounded-xl bg-amber-50 px-4 py-3 text-[13px] leading-relaxed text-amber-900 border border-amber-100">
         <p data-verdict class="mb-1"></p>
