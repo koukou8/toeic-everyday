@@ -98,9 +98,12 @@
     const quiz = document.getElementById('quiz');
     quiz.innerHTML = questions.map((q, i) => renderQuestion(q, i, meta)).join('');
 
-    // 音声ボタン
+    // 音声ボタン（通常 / ゆっくり）
     quiz.querySelectorAll('[data-audio]').forEach((btn) => {
       btn.addEventListener('click', () => UI.speak(btn.getAttribute('data-audio')));
+    });
+    quiz.querySelectorAll('[data-audio-slow]').forEach((btn) => {
+      btn.addEventListener('click', () => UI.speak(btn.getAttribute('data-audio-slow'), { rate: 0.6 }));
     });
     // スクリプト表示トグル
     quiz.querySelectorAll('[data-toggle]').forEach((btn) => {
@@ -213,6 +216,9 @@
       media += `<div class="mb-3 flex flex-wrap items-center gap-2">
         <button data-audio="${UI.escapeHtml(q.audio)}" class="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-[13px] font-bold text-white shadow-soft">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> 音声を再生
+        </button>
+        <button data-audio-slow="${UI.escapeHtml(q.audio)}" class="inline-flex items-center gap-2 rounded-full border border-brand/40 bg-indigo-50 px-4 py-2 text-[13px] font-bold text-brand">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> ゆっくり再生
         </button>
         ${q.passage ? `<button data-toggle="script${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">スクリプトを見る</button>` : ''}
         ${hasJp ? `<button data-jptoggle="${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">日本語訳を見る</button>` : ''}
