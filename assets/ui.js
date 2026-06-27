@@ -61,7 +61,7 @@ const UI = (() => {
     const items = [
       { key: 'home',  label: 'ホーム', href: base + 'index.html',    icon: '<path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2h-3v-6H8v6H5a2 2 0 0 1-2-2z"/>' },
       { key: 'parts', label: 'パート', href: base + 'parts/list.html', icon: '<path d="M4 5h16M4 12h16M4 19h10"/>' },
-      { key: 'vocab', label: '単語',   href: base + 'vocab.html',     icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>' },
+      { key: 'shadowing', label: 'シャドー', href: base + 'shadowing.html', icon: '<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/>' },
       { key: 'my',    label: 'マイ',   href: base + 'settings.html',  icon: '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>' },
     ];
     const icon = (it) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${it.icon}</svg>`;

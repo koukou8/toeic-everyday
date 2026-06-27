@@ -120,9 +120,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="assets/store.js?v=2"></script>
-<script src="assets/content.js?v=4"></script>
+<script src="assets/content.js?v=5"></script>
 <script src="assets/grammar.js?v=5"></script>
-<script src="assets/ui.js?v=3"></script>
+<script src="assets/ui.js?v=4"></script>
 <script src="assets/firebase.js?v=2"></script>
 <script src="assets/sync.js?v=2"></script>
 <script>
@@ -164,7 +164,7 @@
     const gid = gorder[di % gorder.length];
     const gram = getGrammar(gid);
     return [
-      { id: 'vocab', label: '単語帳 10語', sub: 'フラッシュカード', href: 'vocab.html', badge: '語' },
+      { id: 'shadowing', label: 'シャドーイング', sub: '英語→ポーズ→和訳を耳と口で', href: 'shadowing.html', badge: '🎙️' },
       { id: a, label: `Part ${getPart(a).no} ${getPart(a).title}`, sub: `${getPart(a).skill === 'L' ? 'リスニング' : 'リーディング'}`, href: `parts/part.html?p=${a}`, badge: getPart(a).no },
       { id: gid, label: `文法：${gram.title}`, sub: '中学文法 復習', href: `grammar/topic.html?g=${gid}`, badge: gram.icon },
     ];

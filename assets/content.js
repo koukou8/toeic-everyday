@@ -997,3 +997,59 @@ const VOCAB = [
   { en: 'postpone',    ja: '〜を延期する',               ex: 'We had to postpone the meeting.' },
   { en: 'inventory',   ja: '在庫、棚卸し',               ex: 'Please check the inventory today.' },
 ];
+
+// ===== シャドーイング教材（運転中・ハンズフリー想定） =====
+// 各レッスン10項目。{ en: 英文, ja: 和訳 }
+const SHADOWING = [
+  {
+    id: 'part2',
+    title: 'Part 2 応答',
+    desc: '質問とその応答',
+    items: [
+      { en: 'Where should I put these documents?', ja: 'この書類はどこに置けばいいですか？' },
+      { en: 'You can leave them on my desk.',       ja: '私の机に置いておいてください。' },
+      { en: 'When does the next train leave?',      ja: '次の電車はいつ出発しますか？' },
+      { en: 'It leaves at nine fifteen.',           ja: '9時15分に出発します。' },
+      { en: 'Who is in charge of this project?',    ja: 'このプロジェクトの担当は誰ですか？' },
+      { en: 'Ms. Tanaka is handling it.',           ja: '田中さんが担当しています。' },
+      { en: 'How can I get to the station?',        ja: '駅にはどう行けばいいですか？' },
+      { en: 'Go straight and turn left.',           ja: 'まっすぐ行って左に曲がってください。' },
+      { en: 'Would you like some coffee?',          ja: 'コーヒーはいかがですか？' },
+      { en: 'Yes, that would be great.',            ja: 'はい、ぜひお願いします。' },
+    ],
+  },
+  {
+    id: 'part34',
+    title: 'Part 3/4 短文',
+    desc: 'アナウンス・電話応対',
+    items: [
+      { en: 'Thank you for calling Green Hotel.',     ja: 'グリーンホテルにお電話ありがとうございます。' },
+      { en: 'Our store will close in ten minutes.',   ja: '当店はあと10分で閉店します。' },
+      { en: 'Please bring your items to the counter.', ja: '商品をカウンターまでお持ちください。' },
+      { en: 'The meeting has been moved to Room B.',  ja: '会議はB室に変更になりました。' },
+      { en: 'Attention, passengers on flight 202.',   ja: '202便にご搭乗のお客様にお知らせします。' },
+      { en: 'We are sorry for the delay.',            ja: '遅れて申し訳ございません。' },
+      { en: 'The elevator is out of order today.',     ja: '本日エレベーターは故障しています。' },
+      { en: 'Please take the stairs instead.',        ja: '代わりに階段をご利用ください。' },
+      { en: 'May I take a message for him?',          ja: '彼にご伝言を承りましょうか？' },
+      { en: 'He will call you back this afternoon.',   ja: '彼は今日の午後に折り返します。' },
+    ],
+  },
+  {
+    id: 'biz',
+    title: 'ビジネス頻出',
+    desc: '会議・依頼の定型表現',
+    items: [
+      { en: 'Could you send me the report by Friday?',     ja: '金曜までに報告書を送っていただけますか？' },
+      { en: 'I will get back to you as soon as possible.',  ja: 'できるだけ早くご返信します。' },
+      { en: 'Let us schedule a meeting for next week.',     ja: '来週、会議を設定しましょう。' },
+      { en: 'Please let me know if you have any questions.', ja: 'ご質問があればお知らせください。' },
+      { en: 'We need to finish this by the deadline.',      ja: '締め切りまでにこれを終える必要があります。' },
+      { en: 'Thank you for your quick response.',           ja: '迅速なご対応ありがとうございます。' },
+      { en: 'I am afraid I cannot make it tomorrow.',       ja: 'あいにく明日は都合がつきません。' },
+      { en: 'Can we reschedule the appointment?',           ja: '予約を変更できますか？' },
+      { en: 'I will attach the file to my email.',          ja: 'メールにファイルを添付します。' },
+      { en: 'Let me confirm the details with my manager.',  ja: '上司に詳細を確認させてください。' },
+    ],
+  },
+];
