@@ -31,6 +31,7 @@
 
   <!-- レッスンタブ -->
   <div id="lessonTabs" class="mt-5 grid grid-cols-3 gap-2"></div>
+  <p id="poolInfo" class="mt-2 text-center text-[11px] text-sub"></p>
 
   <!-- 学習カード -->
   <div class="mt-5 rounded-3xl bg-white p-5 shadow-card border border-line">
@@ -103,18 +104,20 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="assets/store.js?v=2"></script>
-<script src="assets/content.js?v=5"></script>
+<script src="assets/content.js?v=6"></script>
 <script src="assets/ui.js?v=4"></script>
 <script src="assets/firebase.js?v=2"></script>
 <script src="assets/sync.js?v=2"></script>
 <script>
   // ===== シャドーイング自動ループ再生 =====
   const PAUSE_RATIO = 1.4, PAUSE_MIN = 1.5, GAP = 0.4;
+  const SESSION = 10; // 1日に再生するフレーズ数（在庫から日替わりで抽出）
   const supported = 'speechSynthesis' in window;
 
   const state = {
     lessonIdx: 0,
     itemIdx: 0,
+    sessionItems: [], // その日のレッスンの10フレーズ
     phase: 'idle', // 'en' | 'pause' | 'ja' | 'idle'
     playing: false,
     rate: 0.9,
@@ -122,6 +125,21 @@
     gen: 0,      // 世代トークン（停止・移動で古いコールバックを無効化）
     timer: null,
   };
+
+  // 在庫から日替わりで n フレーズを抽出（毎日違うフレーズに当たる）
+  function pickDaily(arr, n) {
+    if (arr.length <= n) return arr.slice();
+    const today = new Date();
+    const di = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+    const start = (di * n) % arr.length;
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(arr[(start + i) % arr.length]);
+    return out;
+  }
+  function loadSession() {
+    state.sessionItems = pickDaily(lesson().items, SESSION);
+    state.itemIdx = 0;
+  }
 
   const els = {
     tabs: document.getElementById('lessonTabs'),
@@ -133,10 +151,11 @@
     playIcon: document.getElementById('playIcon'), stopIcon: document.getElementById('stopIcon'),
     repeatPill: document.getElementById('repeatPill'), rptState: document.getElementById('rptState'),
     rate: document.getElementById('rate'), rateVal: document.getElementById('rateVal'),
+    poolInfo: document.getElementById('poolInfo'),
   };
 
   const lesson = () => SHADOWING[state.lessonIdx];
-  const items = () => lesson().items;
+  const items = () => state.sessionItems;
   const item = () => items()[state.itemIdx];
 
   // ---- 音声選択（言語コード先頭一致）----
@@ -240,7 +259,7 @@
   function selectLesson(i) {
     if (i === state.lessonIdx) return;
     stop();
-    state.lessonIdx = i; state.itemIdx = 0; render();
+    state.lessonIdx = i; loadSession(); render();
   }
 
   // ---- 描画 ----
@@ -271,6 +290,10 @@
     els.enText.textContent = cur.en;
     els.jaText.textContent = cur.ja;
     els.counter.textContent = (state.itemIdx + 1) + ' / ' + items().length;
+    const pool = lesson().items.length;
+    els.poolInfo.textContent = pool > items().length
+      ? `毎日 ${items().length} フレーズ（全 ${pool} フレーズから日替わり）`
+      : `全 ${items().length} フレーズ`;
 
     // アクティブなフェーズの枠をハイライト
     const enActive = state.phase === 'en' || state.phase === 'pause';
@@ -311,6 +334,7 @@
   window.addEventListener('pagehide', stop);
   document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
 
+  loadSession();
   renderTabs();
   render();
   document.getElementById('nav').innerHTML = UI.renderNav('shadowing');
