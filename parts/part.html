@@ -71,7 +71,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="../assets/store.js?v=2"></script>
-<script src="../assets/content.js?v=7"></script>
+<script src="../assets/content.js?v=8"></script>
 <script src="../assets/ui.js?v=4"></script>
 <script src="../assets/firebase.js?v=2"></script>
 <script src="../assets/sync.js?v=2"></script>
@@ -209,8 +209,8 @@
 
   function renderQuestion(q, i, meta) {
     const isL = meta.skill === 'L';
-    // 設問・選択肢に括弧内の日本語訳がある問題はトグル対象にする（リスニング＋Part6/7など）
-    const hasJp = /（[^）]*）/.test(q.prompt + q.choices.join(''));
+    // 設問・選択肢の括弧内訳、または本文訳(passageJa)がある問題はトグル対象にする
+    const hasJp = /（[^）]*）/.test(q.prompt + q.choices.join('')) || !!q.passageJa;
     const jpToggleBtn = hasJp
       ? `<button data-jptoggle="${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">日本語訳を見る</button>`
       : '';
@@ -233,8 +233,11 @@
         media += `<pre id="script${i}" class="hidden mb-3 whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2.5 text-[13px] leading-relaxed text-slate-700 border border-line font-sans">${UI.escapeHtml(q.passage)}</pre>`;
       }
     } else if (q.passage) {
-      // リーディングの本文は常に表示
+      // リーディングの本文は常に表示。本文訳(passageJa)はボタンで表示。
       media += `<pre class="mb-3 whitespace-pre-wrap rounded-xl bg-slate-50 px-3.5 py-3 text-[13px] leading-relaxed text-slate-700 border border-line font-sans">${UI.escapeHtml(q.passage)}</pre>`;
+      if (q.passageJa) {
+        media += `<pre class="jp-trans hidden mb-3 whitespace-pre-wrap rounded-xl bg-indigo-50 px-3.5 py-3 text-[13px] leading-relaxed text-slate-700 border border-indigo-100 font-sans">${UI.escapeHtml(q.passageJa)}</pre>`;
+      }
     }
 
     const renderText = hasJp ? withHideableJp : UI.escapeHtml;
