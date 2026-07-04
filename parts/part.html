@@ -71,7 +71,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="../assets/store.js?v=2"></script>
-<script src="../assets/content.js?v=6"></script>
+<script src="../assets/content.js?v=7"></script>
 <script src="../assets/ui.js?v=4"></script>
 <script src="../assets/firebase.js?v=2"></script>
 <script src="../assets/sync.js?v=2"></script>
@@ -202,15 +202,18 @@
     return out;
   }
 
-  // 全角括弧内の日本語訳（…）をトグル可能な span に包む（リスニング用）
+  // 全角括弧内の日本語訳（…）をトグル可能な span に包む
   function withHideableJp(str) {
     return UI.escapeHtml(str).replace(/（[^）]*）/g, (m) => `<span class="jp-trans hidden">${m}</span>`);
   }
 
   function renderQuestion(q, i, meta) {
     const isL = meta.skill === 'L';
-    // リスニングで、設問・選択肢に括弧内の日本語訳がある場合だけトグル対象にする
-    const hasJp = isL && /（[^）]*）/.test(q.prompt + q.choices.join(''));
+    // 設問・選択肢に括弧内の日本語訳がある問題はトグル対象にする（リスニング＋Part6/7など）
+    const hasJp = /（[^）]*）/.test(q.prompt + q.choices.join(''));
+    const jpToggleBtn = hasJp
+      ? `<button data-jptoggle="${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">日本語訳を見る</button>`
+      : '';
     let media = '';
     if (q.scene) {
       media += `<div class="mb-3 rounded-xl bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600 border border-line">${q.scene}</div>`;
@@ -224,7 +227,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> ゆっくり再生
         </button>
         ${q.passage ? `<button data-toggle="script${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">スクリプトを見る</button>` : ''}
-        ${hasJp ? `<button data-jptoggle="${i}" class="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-sub">日本語訳を見る</button>` : ''}
+        ${jpToggleBtn}
       </div>`;
       if (q.passage) {
         media += `<pre id="script${i}" class="hidden mb-3 whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2.5 text-[13px] leading-relaxed text-slate-700 border border-line font-sans">${UI.escapeHtml(q.passage)}</pre>`;
@@ -253,6 +256,7 @@
         ${speakHtml}
       </div>
       ${media}
+      ${!q.audio && jpToggleBtn ? `<div class="mb-3 flex flex-wrap gap-2">${jpToggleBtn}</div>` : ''}
       <p class="mb-3 text-[15px] font-semibold leading-relaxed">${renderText(q.prompt)}</p>
       <div class="space-y-2">${choices}</div>
       <div id="ex${i}" class="hidden mt-3 rounded-xl bg-amber-50 px-4 py-3 text-[13px] leading-relaxed text-amber-900 border border-amber-100">
